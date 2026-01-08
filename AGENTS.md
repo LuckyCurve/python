@@ -1,8 +1,8 @@
 # AGENTS
 
-本目录包含可独立运行的 Python 脚本，支持通过 `uv run https://xxx.py` 方式直接执行。
+本目录包含可独立运行的 Python 脚本。
 
-每个脚本都遵循 PEP 规范，包含完整的依赖声明（通过 `# /// pyproject` 格式）。
+依赖通过项目根目录的 `pyproject.toml` 统一管理。
 
 ---
 
@@ -40,18 +40,6 @@ uv run generate_value_investment_analysis.py AAPL
 
 # 指定 API Key
 uv run generate_value_investment_analysis.py AAPL -k YOUR_API_KEY
-
-# 远程运行
-uv run https://raw.githubusercontent.com/username/repo/main/generate_value_investment_analysis.py AAPL
-```
-
-**脚本内依赖声明（用于远程 URL 运行）：**
-```python
-# /// pyproject
-# Requires: pandas>=1.5.0
-# Requires: requests>=2.28.0
-# Requires: alpha-vantage>=3.2.0
-# ///
 ```
 
 **环境变量：**
@@ -83,11 +71,6 @@ uv add package-name
 
 ```python
 """脚本简短描述（1-2行）"""
-
-# /// pyproject
-# Requires: pandas>=1.5.0
-# Requires: requests>=2.28.0
-# ///
 
 import argparse
 # 其他 imports...

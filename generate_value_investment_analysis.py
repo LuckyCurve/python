@@ -3,12 +3,6 @@
 输出原始完整数据，方便复制给 AI 分析
 """
 
-# /// pyproject
-# Requires: pandas>=1.5.0
-# Requires: requests>=2.28.0
-# Requires: alpha-vantage>=3.2.0
-# ///
-
 import argparse
 import os
 import time
