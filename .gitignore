@@ -1,0 +1,28 @@
+# Python
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Virtual Environment
+.venv/
+venv/
+
+# IDE
+.ruff_cache/
+.pytest_cache/
+*.swp
+*.swo
+~*
+
+# Project
+.python-version
+uv.lock
+
+# AI Analysis Outputs
+analysis_outputs/
