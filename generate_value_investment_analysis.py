@@ -126,6 +126,16 @@ def format_table(title: str, df: pd.DataFrame) -> str:
     return "\n".join(lines)
 
 
+def check_api_error(data: dict) -> None:
+    """检查 Alpha Vantage 返回的数据是否包含错误信息"""
+    if isinstance(data, dict):
+        for key, value in data.items():
+            if isinstance(value, str) and "Thank you for using Alpha Vantage" in value:
+                raise RuntimeError(f"API Error: {value}")
+            if isinstance(value, str) and "API rate limit" in value:
+                raise RuntimeError(f"API Rate Limit: {value}")
+
+
 def get_stock_quote(ticker: str, api_key: str) -> dict:
     result = {
         "price": None,
@@ -141,14 +151,17 @@ def get_stock_quote(ticker: str, api_key: str) -> dict:
         url = f"https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={ticker}&apikey={api_key}"
         response = requests.get(url)
         data = response.json()
+        check_api_error(data)
 
         if "Global Quote" in data and data["Global Quote"]:
             quote = data["Global Quote"]
             result["price"] = quote.get("05. price")
             result["change"] = quote.get("09. change")
             result["change_percent"] = quote.get("10. change percent")
+    except RuntimeError:
+        raise
     except Exception as e:
-        print(f"Warning: Failed to get quote: {e}")
+        raise RuntimeError(f"Failed to get quote: {e}")
 
     time.sleep(1)
 
@@ -156,14 +169,17 @@ def get_stock_quote(ticker: str, api_key: str) -> dict:
         url = f"https://www.alphavantage.co/query?function=OVERVIEW&symbol={ticker}&apikey={api_key}"
         response = requests.get(url)
         data = response.json()
+        check_api_error(data)
 
         if data and "MarketCapitalization" in data:
             result["market_cap"] = data.get("MarketCapitalization")
             result["pe_ratio"] = data.get("PERatio")
             result["52_week_high"] = data.get("52WeekHigh")
             result["52_week_low"] = data.get("52WeekLow")
+    except RuntimeError:
+        raise
     except Exception as e:
-        print(f"Warning: Failed to get company overview: {e}")
+        raise RuntimeError(f"Failed to get company overview: {e}")
 
     return result
 
@@ -215,27 +231,21 @@ def get_financials(ticker: str, api_key: str) -> str:
     output_lines.append("")
 
     print(f"Fetching {ticker} Balance Sheet...")
-    try:
-        balance_df, _ = fd.get_balance_sheet_annual(ticker)
-        output_lines.append(format_table("Balance Sheet", balance_df))
-    except Exception as e:
-        output_lines.append(f"\n## Balance Sheet\nFailed: {e}\n")
+    balance_df, _ = fd.get_balance_sheet_annual(ticker)
+    check_api_error(balance_df)
+    output_lines.append(format_table("Balance Sheet", balance_df))
     time.sleep(1)
 
     print(f"Fetching {ticker} Income Statement...")
-    try:
-        income_df, _ = fd.get_income_statement_annual(ticker)
-        output_lines.append(format_table("Income Statement", income_df))
-    except Exception as e:
-        output_lines.append(f"\n## Income Statement\nFailed: {e}\n")
+    income_df, _ = fd.get_income_statement_annual(ticker)
+    check_api_error(income_df)
+    output_lines.append(format_table("Income Statement", income_df))
     time.sleep(1)
 
     print(f"Fetching {ticker} Cash Flow Statement...")
-    try:
-        cashflow_df, _ = fd.get_cash_flow_annual(ticker)
-        output_lines.append(format_table("Cash Flow Statement", cashflow_df))
-    except Exception as e:
-        output_lines.append(f"\n## Cash Flow Statement\nFailed: {e}\n")
+    cashflow_df, _ = fd.get_cash_flow_annual(ticker)
+    check_api_error(cashflow_df)
+    output_lines.append(format_table("Cash Flow Statement", cashflow_df))
 
     return "\n".join(output_lines)
 
@@ -280,9 +290,16 @@ def main():
         print("如需重新生成，请先删除该文件。")
         return
 
-    financial_data = get_financials(ticker, api_key)
-    generate_analysis_prompt(ticker, financial_data)
+    try:
+        financial_data = get_financials(ticker, api_key)
+        generate_analysis_prompt(ticker, financial_data)
+    except RuntimeError as e:
+        print(f"\n错误: {e}")
+        print("\n请稍后重试，或升级 Alpha Vantage 订阅计划。")
+        return 1
+
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    exit(main())
