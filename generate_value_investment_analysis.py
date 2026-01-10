@@ -27,43 +27,34 @@ PROMPT_TEMPLATE = """# Role
 
 # Analysis Framework (Step-by-Step)
 
-## 1. 数据清洗与关键指标计算
-由于数据可能未直接提供比率，请务必先计算以下指标：
-*   **市值 (Market Cap)**：使用 `Current Price` * `CommonStockSharesOutstanding` (最新一期)。
-*   **企业价值 (EV)**：市值 + 总债务 - 现金及现金等价物。
-*   **估值倍数**：P/E (市盈率), P/OCF (市现率), P/B (市净率)。
-*   **自由现金流 (FCF)**：`Operating Cash Flow` - `Capital Expenditures`。
-*   **ROIC (资本回报率)**：估算即可，用于判断公司配置资本的效率。
+## 1. 深度价值计算 (The "Naked" Numbers)
+请务必计算并展示以下指标，用于剥去会计粉饰：
+* **安全边际 (Margin of Safety)**：计算 NCAV (净流动资产价值 = 流动资产 - 总负债)。当前市值是 NCAV 的几倍？
+* **调整后 FCF (Real FCF)**：`Operating Cashflow` - `Capital Expenditures` - `Stock-Based Compensation` (若数据未列出，请根据 Operating Expenses 的异常变动做出风险提示)。
+* **所有者收益 (Owner Earnings)**：净利润 + 折旧摊销 - 必要资本支出 - 营运资本变动。
+* **资本回报率 (ROIC)**：EBIT / (净股权 + 净债务)。判断其护城河是"真金"还是"烧钱"。
 
-## 2. 资产负债表压力测试 (最重要的环节)
-*   **偿债能力**：计算"净债务/EBITDA"和"流动比率"。公司是否有迫在眉睫的偿债危机？
-*   **资产质量**：检查 `Goodwill` (商誉) 和 `Intangible Assets` (无形资产) 在总资产中的占比。如果占比过高，请视为风险（由收购驱动的增长且资产虚高）。
-*   **现金储备**：公司的现金能否覆盖短期债务？
+## 2. 资产负债表"排雷" (Stress Test)
+* **清算价值分析**：如果公司业务停滞，其现金及短投能否覆盖所有债务？检查 `Other Current Assets` 占比，若过高，需质疑其资产真实性。
+* **负营运资本风险**：观察 `Accounts Payable` 和 `Other Current Liabilities`。公司是否过度依赖占用供应商资金来维持运营？在增长放缓时，这是否会触发流动性挤兑？
+* **无形资产剔除**：将 `Goodwill` 和 `Intangible Assets` 直接从净资产中扣除，计算"有形净资产 (Tangible Book Value)"。
 
-## 3. 盈利质量与现金流验证
-*   **利润含金量**：严格对比 `Net Income` (净利润) 和 `Operating Cashflow` (经营现金流)。如果净利润很高但现金流很差，请发出"高风险"红色警报（可能是激进的会计确认）。
-*   **趋势分析**：观察过去几年的 `Gross Margin` (毛利率) 和 `Operating Margin` (营业利润率)。是在提升、持平还是恶化？
-*   **股东稀释**：检查 `CommonStockSharesOutstanding` 过去几年的变化。公司是在回购股票（利好）还是在增发股票稀释股东（利空）？
+## 3. 盈利含金量穿透 (Quality Over Quantity)
+* **权责发生制检查**：计算 Sloan Ratio (应计比率)。如果 (净利润 - 现金流) / 总资产比例过高，警告可能存在会计操纵。
+* **利润率边界测试**：当前毛利率/营业利润率处于历史什么位置？要求模拟当竞争加剧、利润率收缩 30% 时，公司是否还会亏损。
+* **稀释效应**：不看 EPS，看总股本变动。如果公司在回购，计算回购注销比例；如果在增发，计算稀释率。
 
-## 4. 保守派评分模型 (0-100分)
-请根据以下严格标准打分，如果不确定，宁可打低分：
+## 4. 极端保守评分模型 (0-100分)
+* **资产安全 (40分)**：净现金状态、清算价值保障、资产负债表真实度。
+* **现金机器 (30分)**：FCF 连续性、对 SBC 的依赖度、资本开支效率。
+* **估值边际 (20分)**：当前价格相对于 Intrinsic Value (内在价值) 的折扣（要求至少 30% 折扣才能给高分）。
+* **管理层行为 (10分)**：是否存在破坏股东价值的收购或过度激励。
 
-*   **财务健康 (40分)**：
-    *   满分标准：净现金状态（现金>债务），流动比率>2。
-    *   扣分项：高杠杆、存货积压、商誉过高。
-*   **盈利稳定性 (30分)**：
-    *   满分标准：毛利率稳定，FCF（自由现金流）连续多年为正且覆盖股息。
-    *   扣分项：盈利波动剧烈、经营现金流持续低于净利润。
-*   **估值吸引力 (20分)**：
-    *   满分标准：P/E 或 P/FCF 显著低于历史平均或行业常识（例如 P/E < 15，除非是高增长行业可适当放宽但仍需保守）。
-*   **股东回报 (10分)**：
-    *   满分标准：持续的分红或实质性的股票回购。
-
-## 5. 投资结论
-*   **评级**：**强力买入 / 买入 / 观望 / 卖出**。
-    *   *注意：除非这是一家极度被低估且极其安全的公司，否则不要轻易给"买入"。大多数平庸的公司应评为"观望"。*
-*   **下行风险 (Downside Risks)**：请列出如果是最坏情况，投资者可能会因为什么亏钱？（例如：债务违约、利润率均值回归、过度资本开支）。
-*   **一句话总结**：用犀利、不留情面的语言总结这家公司的现状。
+## 5. 最终审判 (Investment Conclusion)
+* **评级**：**强力买入 / 买入 / 观望 / 卖出**。
+* **格雷厄姆式评价**：这是一家"烟蒂股"吗？还是一家以合理价格交易的卓越公司？
+* **毁灭性情景 (Kill the Business)**：列出三种能让这家公司在 3 年内破产或市值腰斩的外部/内部诱因。
+* **一句话冷评**：用一句刻薄但深刻的话，戳穿该公司的财务幻象或商业本质。
 
 # Output Style
 *   使用 Markdown 表格展示计算出的关键指标。
@@ -96,7 +87,7 @@ def format_table(title: str, df: pd.DataFrame) -> str:
     if df is None or df.empty:
         return f"\n## {title}\n无数据\n"
 
-    df = df.head(4)
+    df = df
 
     if "fiscalDateEnding" in df.columns:
         dates = df["fiscalDateEnding"].tolist()
@@ -135,10 +126,7 @@ def get_stock_quote(ticker: str, api_key: str) -> dict:
         "price": None,
         "change": None,
         "change_percent": None,
-        "market_cap": None,
-        "pe_ratio": None,
-        "52_week_high": None,
-        "52_week_low": None,
+        "overview": None,
     }
 
     try:
@@ -165,11 +153,8 @@ def get_stock_quote(ticker: str, api_key: str) -> dict:
         data = response.json()
         check_api_error(data)
 
-        if data and "MarketCapitalization" in data:
-            result["market_cap"] = data.get("MarketCapitalization")
-            result["pe_ratio"] = data.get("PERatio")
-            result["52_week_high"] = data.get("52WeekHigh")
-            result["52_week_low"] = data.get("52WeekLow")
+        if data and "Symbol" in data:
+            result["overview"] = data
     except RuntimeError:
         raise
     except Exception as e:
@@ -179,9 +164,7 @@ def get_stock_quote(ticker: str, api_key: str) -> dict:
 
 
 def format_market_info(quote_data: dict) -> str:
-    lines = ["## Market Data (Latest)", ""]
-    lines.append("| Metric | Value |")
-    lines.append("|---|---|")
+    lines = ["## Company Overview", ""]
 
     if quote_data.get("price"):
         price = float(quote_data["price"])
@@ -195,20 +178,31 @@ def format_market_info(quote_data: dict) -> str:
         sign = "+" if change >= 0 else ""
         lines.append(f"| Change | {sign}{change:.2f} ({change_pct}) |")
 
-    if quote_data.get("market_cap"):
-        market_cap = float(quote_data["market_cap"])
-        lines.append(f"| Market Cap | {format_number(market_cap)} |")
-    else:
-        lines.append("| Market Cap | - |")
+    lines.append("")
 
-    if quote_data.get("pe_ratio") and quote_data["pe_ratio"] != "None":
-        lines.append(f"| P/E Ratio | {quote_data['pe_ratio']} |")
+    overview = quote_data.get("overview")
+    if overview:
+        overview_lines = []
 
-    if quote_data.get("52_week_high") and quote_data.get("52_week_low"):
-        high = float(quote_data["52_week_high"])
-        low = float(quote_data["52_week_low"])
-        lines.append(f"| 52-Week High | ${high:.2f} |")
-        lines.append(f"| 52-Week Low | ${low:.2f} |")
+        for key, value in overview.items():
+            if value and value != "None" and str(value).strip():
+                if isinstance(value, (int, float)):
+                    if abs(value) >= 1e9:
+                        formatted = f"{value / 1e9:.2f}B"
+                    elif abs(value) >= 1e6:
+                        formatted = f"{value / 1e6:.2f}M"
+                    elif abs(value) >= 1e3:
+                        formatted = f"{value / 1e3:.2f}K"
+                    else:
+                        formatted = f"{value:.2f}"
+                    overview_lines.append(f"| {key} | {formatted} |")
+                else:
+                    overview_lines.append(f"| {key} | {value} |")
+
+        if overview_lines:
+            lines.append("| Metric | Value |")
+            lines.append("|---|--- |")
+            lines.extend(overview_lines)
 
     lines.append("")
     return "\n".join(lines)
