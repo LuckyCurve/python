@@ -19,9 +19,14 @@ uv run generate_value_investment_analysis.py AAPL
 
 | 脚本 | 功能 |
 |-----|------|
-| `generate_value_investment_analysis.py` | 获取财务数据，生成价值投资分析 Prompt |
+| `generate_value_investment_analysis.py` | 获取财务数据 + Company Overview，生成深度价值投资分析 Prompt |
 
-输出文件位于 `analysis_outputs/{TICKER}_analysis_prompt.md`。
+## 输出
+
+- **分析文档**：`analysis_outputs/{TICKER}_analysis_prompt.md`
+- **数据范围**：返回 API 所有可用数据（不截断）
+  - Company Overview（股息、账面价值、EV 倍数等完整字段）
+  - 资产负债表、利润表、现金流量表（全部年度报告）
 
 ## 配置
 

@@ -24,11 +24,12 @@ uv add pandas requests alpha-vantage
 
 ### generate_value_investment_analysis.py
 
-从 Alpha Vantage 获取公司三大财务报表，生成深度价值投资分析 Prompt 文档。
+从 Alpha Vantage 获取公司财务报表和 Company Overview，生成深度价值投资分析 Prompt 文档。
 
 **功能特性：**
-- 获取公司三大财务报表（年报）
-- 将数据嵌入深度价值投资分析框架
+- 获取 Company Overview（完整字段：股息、账面价值、EV 倍数等）
+- 获取公司三大财务报表（年报，不截断，返回所有数据）
+- 将数据嵌入专业深度价值投资分析框架（NCAV、Sloan Ratio、Owner Earnings）
 - 输出到 `analysis_outputs/{TICKER}_analysis_prompt.md`
 - 支持 API Key 参数或环境变量
 
