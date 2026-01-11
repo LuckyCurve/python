@@ -15,7 +15,7 @@
 uv init . --name value-investment-analysis
 
 # 添加依赖
-uv add pandas requests alpha-vantage edgartools
+uv add pandas requests alpha-vantage edgartools curl-cffi
 ```
 
 ---
@@ -81,17 +81,17 @@ uv run get_sec_filings.py AAPL -e your-email@example.com
 
 ### open_reuters.py
 
-打开 Reuters 股票基本面估值页面。
+打开 Reuters 股票基本面估值页面（自动判断并只打开有效 URL）。
 
 **功能特性：**
-- 同时打开 Nasdaq(.O) 和 NYSE(.N) 两个版本的页面
-- 用户手动关闭无效的页面
+- 使用 curl-cffi 并行检查 Nasdaq(.O) 和 NYSE(.N) 两个版本
+- 自动判断哪个 URL 有效（HTTP 200），只打开有效页面
 - 支持指定单个后缀
 
 **运行方式：**
 
 ```bash
-# 同时打开两个版本
+# 自动判断并打开有效页面
 uv run open_reuters.py PDD
 
 # 只打开 Nasdaq 版本

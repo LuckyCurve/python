@@ -1,16 +1,27 @@
 """
 打开 Reuters 股票基本面页面
-根据 Ticker 同时打开 Nasdaq(.O) 和 NYSE(.N) 两个版本的页面
+根据 Ticker 自动判断并打开有效的 URL（Nasdaq.O 或 NYSE.N）
 """
 
 import argparse
 import subprocess
 import sys
+from concurrent.futures import ThreadPoolExecutor
+from curl_cffi import requests
 
 
 def build_url(ticker: str, suffix: str) -> str:
     """构建 Reuters 估值页面 URL"""
     return f"https://www.reuters.com/markets/companies/{ticker}{suffix}/key-metrics/valuation"
+
+
+def is_valid_url(url: str) -> bool:
+    """检查 URL 是否有效"""
+    try:
+        response = requests.get(url, impersonate="chrome", timeout=10)
+        return response.status_code == 200
+    except Exception:
+        return False
 
 
 def open_url(url: str) -> bool:
@@ -43,7 +54,7 @@ def main():
         "--suffix",
         type=str,
         choices=[".O", ".N"],
-        help="指定后缀：.O(Nasdaq) 或 .N(NYSE)，留空则同时打开两个",
+        help="指定后缀：.O(Nasdaq) 或 .N(NYSE)，留空则自动判断并打开有效页面",
     )
     args = parser.parse_args()
 
@@ -56,11 +67,22 @@ def main():
     else:
         url_o = build_url(ticker, ".O")
         url_n = build_url(ticker, ".N")
-        print(f"打开 Nasdaq 版本: {url_o}")
-        print(f"打开 NYSE 版本: {url_n}")
-        open_url(url_o)
-        open_url(url_n)
-        print("请手动关闭无效的页面")
+
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            future_o = executor.submit(is_valid_url, url_o)
+            future_n = executor.submit(is_valid_url, url_n)
+            valid_o = future_o.result()
+            valid_n = future_n.result()
+
+        if valid_o:
+            print(f"打开 Nasdaq 版本: {url_o}")
+            open_url(url_o)
+        elif valid_n:
+            print(f"打开 NYSE 版本: {url_n}")
+            open_url(url_n)
+        else:
+            print(f"错误：两个 URL 均无效", file=sys.stderr)
+            sys.exit(1)
 
 
 if __name__ == "__main__":
