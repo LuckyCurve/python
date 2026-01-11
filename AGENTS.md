@@ -79,6 +79,30 @@ uv run get_sec_filings.py AAPL -e your-email@example.com
 
 ---
 
+### open_reuters.py
+
+打开 Reuters 股票基本面估值页面。
+
+**功能特性：**
+- 同时打开 Nasdaq(.O) 和 NYSE(.N) 两个版本的页面
+- 用户手动关闭无效的页面
+- 支持指定单个后缀
+
+**运行方式：**
+
+```bash
+# 同时打开两个版本
+uv run open_reuters.py PDD
+
+# 只打开 Nasdaq 版本
+uv run open_reuters.py PDD -s O
+
+# 只打开 NYSE 版本
+uv run open_reuters.py PDD -s N
+```
+
+---
+
 ## 添加新脚本指南
 
 新增脚本时请遵循以下规范：
