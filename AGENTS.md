@@ -1,150 +1,125 @@
 # AGENTS
 
-本目录包含可独立运行的 Python 脚本。
-
-依赖通过项目根目录的 `pyproject.toml` 统一管理。
+本目录包含可独立运行的 Python 脚本。依赖通过项目根目录的 `pyproject.toml` 统一管理。
 
 ---
 
-## 项目初始化
-
-首次克隆项目后，需要初始化环境并安装依赖：
+## 常用命令
 
 ```bash
-# 初始化项目（如果不存在 pyproject.toml）
-uv init . --name value-investment-analysis
+# 安装/更新依赖
+uv sync
 
-# 添加依赖
-uv add pandas requests alpha-vantage edgartools curl-cffi
-```
+# 运行脚本
+uv run script_name.py <args>
 
----
+# 运行所有脚本（测试）
+uv run pytest
 
-## 脚本列表
+# 运行单个测试
+uv run pytest tests/test_file.py::test_function
 
-### generate_value_investment_analysis.py
+# 代码格式化
+uv run ruff format .
 
-从 Alpha Vantage 获取公司财务报表和 Company Overview，生成深度价值投资分析 Prompt 文档。
-
-**功能特性：**
-- 获取 Company Overview（完整字段：股息、账面价值、EV 倍数等）
-- 获取公司三大财务报表（年报，不截断，返回所有数据）
-- 将数据嵌入专业深度价值投资分析框架（NCAV、Sloan Ratio、Owner Earnings）
-- 输出到 `analysis_outputs/{TICKER}_analysis_prompt.md`
-- 支持 API Key 参数或环境变量
-
-**运行方式：**
-
-```bash
-# 本地运行
-uv run generate_value_investment_analysis.py AAPL
-
-# 指定 API Key
-uv run generate_value_investment_analysis.py AAPL -k YOUR_API_KEY
-```
-
-**环境变量：**
-- `ALPHA_VANTAGE_API_KEY` - Alpha Vantage API Key
-
----
-
-### get_sec_filings.py
-
-从 SEC EDGAR 获取公司财报 URL 地址。
-
-**功能特性：**
-- 自动识别公司类型（美国公司 vs 外国公司 ADR）
-- 获取 10-K/20-F 年报和 10-Q/6-K 季报
-- 支持按年份筛选
-- 支持 JSON 格式输出
-
-**运行方式：**
-
-```bash
-# 基本用法
-uv run get_sec_filings.py AAPL
-
-# 指定年份
-uv run get_sec_filings.py AAPL -y 3
-
-# JSON 格式输出
-uv run get_sec_filings.py AAPL --json
-
-# 指定身份邮箱（首次使用需要）
-uv run get_sec_filings.py AAPL -e your-email@example.com
-```
-
-**环境变量：**
-- `SEC_IDENTITY_EMAIL` - SEC 要求的身份标识邮箱
-
----
-
-### open_reuters.py
-
-打开 Reuters 股票基本面估值页面（自动判断并只打开有效 URL）。
-
-**功能特性：**
-- 使用 curl-cffi 并行检查 Nasdaq(.O) 和 NYSE(.N) 两个版本
-- 自动判断哪个 URL 有效（HTTP 200），只打开有效页面
-- 支持指定单个后缀
-
-**运行方式：**
-
-```bash
-# 自动判断并打开有效页面
-uv run open_reuters.py PDD
-
-# 只打开 Nasdaq 版本
-uv run open_reuters.py PDD -s O
-
-# 只打开 NYSE 版本
-uv run open_reuters.py PDD -s N
+# 代码检查
+uv run ruff check .
 ```
 
 ---
 
-## 添加新脚本指南
+## 代码规范
 
-新增脚本时请遵循以下规范：
-
-### 1. 项目初始化
-
-首次设置项目：
-```bash
-uv init . --name value-investment-analysis
-```
-
-### 2. 添加依赖
-
-**重要：不要手动修改 pyproject.toml，使用 uv 命令管理依赖。**
-
-当脚本需要新依赖时：
-```bash
-uv add package-name
-```
-
-### 3. 脚本结构
+### 导入顺序
+标准库 → 第三方库 → 本地模块。分组间空一行。
 
 ```python
-"""脚本简短描述（1-2行）"""
+import argparse
+import sys
+from concurrent.futures import ThreadPoolExecutor
+
+import pandas as pd
+from alpha_vantage.fundamentaldata import FundamentalData
+```
+
+### 命名约定
+- 函数/变量：`snake_case`
+- 类：`PascalCase`
+- 常量：`UPPER_SNAKE_CASE`
+- 私有成员：前缀 `_`
+
+### 类型标注
+使用类型注解，返回类型必须标注。
+
+```python
+def build_url(ticker: str, suffix: str) -> str:
+    ...
+```
+
+### 错误处理
+- 使用具体异常类型
+- 向上传递时用 `RuntimeError` 包装
+- 避免空 except 块
+
+```python
+try:
+    ...
+except ValueError as e:
+    raise RuntimeError(f"Failed to get data: {e}")
+```
+
+### 脚本结构
+```python
+"""简短描述"""
 
 import argparse
-# 其他 imports...
+# imports...
+
+def helper_function() -> ...:
+    ...
 
 def main():
-    """主函数逻辑"""
+    parser = argparse.ArgumentParser(...)
+    parser.add_argument(...)
+    args = parser.parse_args()
     ...
 
 if __name__ == "__main__":
     main()
 ```
 
-### 4. 文档要求
+### 关键约定
+- 使用 `Path` 处理文件路径
+- 使用 `argparse` 提供 CLI 参数
+- 环境变量作为后备配置
+- 不手动修改 `pyproject.toml`，使用 `uv add`
 
-- 使用 `argparse` 提供命令行参数
-- 包含 `--help` 说明
-- 添加使用示例
+---
 
-### 5. 更新 AGENTS.md
+## 脚本列表
 
-在 AGENTS.md 中添加新脚本的文档。
+### generate_value_investment_analysis.py
+从 Alpha Vantage 获取公司财务报表，生成价值投资分析 Prompt。
+```bash
+uv run generate_value_investment_analysis.py AAPL
+```
+
+### get_sec_filings.py
+从 SEC EDGAR 获取公司财报 URL。
+```bash
+uv run get_sec_filings.py AAPL
+```
+
+### open_reuters.py
+打开 Reuters 股票基本面估值页面。
+```bash
+uv run open_reuters.py PDD
+```
+
+---
+
+## 添加新脚本
+
+1. 使用 `uv add package-name` 添加依赖
+2. 遵循上述脚本结构
+3. 在 AGENTS.md 脚本列表部分添加文档
