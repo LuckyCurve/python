@@ -111,7 +111,7 @@ uv run get_sec_filings.py AAPL
 ```
 
 ### open_reuters.py
-打开 Reuters 股票基本面估值页面。
+打开 Reuters 股票基本面估值页面，自动判断并只打开有效 URL。
 ```bash
 uv run open_reuters.py PDD
 ```
@@ -129,3 +129,14 @@ uv run tab_to_column.py
 1. 使用 `uv add package-name` 添加依赖
 2. 遵循上述脚本结构
 3. 在 AGENTS.md 脚本列表部分添加文档
+
+---
+
+## 配置
+
+### Alpha Vantage
+- `ALPHA_VANTAGE_API_KEY` 环境变量，或使用 `-k` 参数
+- 获取 API Key: https://www.alphavantage.co/support/#api-key
+
+### SEC EDGAR
+- `SEC_IDENTITY_EMAIL` 环境变量，或使用 `-e` 参数（首次使用需要设置）
