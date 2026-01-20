@@ -9,5 +9,7 @@ dependencies = [
     "curl-cffi>=0.14.0",
     "edgartools>=5.8.3",
     "pandas>=2.3.3",
+    "pyperclip>=1.11.0",
+    "pywin32>=311",
     "requests>=2.32.5",
 ]

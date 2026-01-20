@@ -116,6 +116,12 @@ uv run get_sec_filings.py AAPL
 uv run open_reuters.py PDD
 ```
 
+### tab_to_column.py
+监听剪贴板变化，自动将制表符分隔的数据转换为每行一个数值的格式（自动去除千位分隔符）并复制回剪贴板。使用 Windows API 的系统回调机制，无轮询，低 CPU 占用。
+```bash
+uv run tab_to_column.py
+```
+
 ---
 
 ## 添加新脚本
