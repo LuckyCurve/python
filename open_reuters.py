@@ -5,9 +5,6 @@
 
 import argparse
 import subprocess
-import sys
-from concurrent.futures import ThreadPoolExecutor
-from curl_cffi import requests
 
 
 def build_url(ticker: str, suffix: str) -> str:
@@ -15,28 +12,9 @@ def build_url(ticker: str, suffix: str) -> str:
     return f"https://www.reuters.com/markets/companies/{ticker}{suffix}/key-metrics/valuation"
 
 
-def is_valid_url(url: str) -> bool:
-    """检查 URL 是否有效"""
-    try:
-        response = requests.get(url, impersonate="chrome", timeout=10)
-        return response.status_code == 200
-    except Exception:
-        return False
-
-
-def open_url(url: str) -> bool:
+def open_url(url: str) -> None:
     """使用系统命令打开 URL"""
-    try:
-        subprocess.run(
-            ["start", url],
-            shell=True,
-            check=True,
-            capture_output=True,
-        )
-        return True
-    except Exception as e:
-        print(f"打开失败: {e}", file=sys.stderr)
-        return False
+    subprocess.run(["start", url], shell=True)
 
 
 def main():
@@ -54,7 +32,7 @@ def main():
         "--suffix",
         type=str,
         choices=[".O", ".N"],
-        help="指定后缀：.O(Nasdaq) 或 .N(NYSE)，留空则自动判断并打开有效页面",
+        help="指定后缀：.O(Nasdaq) 或 .N(NYSE)，留空则打开两个链接",
     )
     args = parser.parse_args()
 
@@ -62,27 +40,15 @@ def main():
 
     if args.suffix:
         url = build_url(ticker, args.suffix)
-        print(f"打开: {url}")
+        print(url)
         open_url(url)
     else:
         url_o = build_url(ticker, ".O")
         url_n = build_url(ticker, ".N")
-
-        with ThreadPoolExecutor(max_workers=2) as executor:
-            future_o = executor.submit(is_valid_url, url_o)
-            future_n = executor.submit(is_valid_url, url_n)
-            valid_o = future_o.result()
-            valid_n = future_n.result()
-
-        if valid_o:
-            print(f"打开 Nasdaq 版本: {url_o}")
-            open_url(url_o)
-        elif valid_n:
-            print(f"打开 NYSE 版本: {url_n}")
-            open_url(url_n)
-        else:
-            print(f"错误：两个 URL 均无效", file=sys.stderr)
-            sys.exit(1)
+        print(url_o)
+        print(url_n)
+        open_url(url_o)
+        open_url(url_n)
 
 
 if __name__ == "__main__":
