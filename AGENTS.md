@@ -111,7 +111,7 @@ uv run get_sec_filings.py AAPL
 ```
 
 ### open_reuters.py
-打开 Reuters 股票基本面估值页面，自动判断并只打开有效 URL。
+打开 Reuters 股票基本面估值页面，直接输出并打开两个链接（.O 和 .N）。
 ```bash
 uv run open_reuters.py PDD
 ```

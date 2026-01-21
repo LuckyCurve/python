@@ -24,7 +24,7 @@ uv run get_sec_filings.py AAPL
 |-----|------|
 | `generate_value_investment_analysis.py` | 获取财务数据 + Company Overview，生成深度价值投资分析 Prompt |
 | `get_sec_filings.py` | 从 SEC EDGAR 获取公司财报 URL（10-K/20-F、10-Q/6-K） |
-| `open_reuters.py` | 打开 Reuters 股票基本面估值页面（自动判断并只打开有效 URL） |
+| `open_reuters.py` | 打开 Reuters 股票基本面估值页面（直接输出并打开两个链接） |
 | `tab_to_column.py` | 监听剪贴板变化，自动将制表符分隔的数据转换为每行一个数值 |
 
 ## 使用示例
